@@ -115,7 +115,8 @@
 
 ### References
 
-영상 처리
+영상 처리<br>
 [Advanced Lane Finding Project](https://github.com/windowsub0406/Advanced-lane-finding/blob/master/README.md)
-[road_lane_line_detection](https://github.com/georgesung/road_lane_line_detection
+<br>
+[road_lane_line_detection](https://github.com/georgesung/road_lane_line_detection)
 
