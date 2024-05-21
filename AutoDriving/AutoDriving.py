@@ -395,6 +395,40 @@ def detect_lanes_img(img):
 
     return final, left_fit_line, right_fit_line
 
+
+def videoProcessing(img):
+    prevTime = 0
+    angleError = 0
+    ret, frame = cap.read()
+    # if frame.shape[0] != 540:  # resizing for challenge video
+    #     frame = cv2.resize(frame, None, fx=3/4, fy=3/4, interpolation=cv2.INTER_AREA)
+    frame = cv2.resize(frame, dsize=(540,360), interpolation=cv2.INTER_AREA)
+
+    result, left_line, right_line = detect_lanes_img(frame)
+    f_x = result.shape[1]
+    f_y = result.shape[0]
+    # print(f_x,f_y)
+    # print(left_line, right_line)
+    # midpoint = int((left_line[2]+right_line[2])/2)
+    # print(midpoint)
+
+    midx = int(right_line[2] + left_line[2] - (right_line[0] + left_line[0]) / 2)
+    midy = int(right_line[3] * 2 - right_line[1])
+    result = cv2.circle(result,(midx,midy),5,(0,255,0),-1)
+    angleError = midx - 270
+    # result =  cv2.circle(result, (midpoint,int(f_y/2)), 5,(0,255,0),-1
+    curTime = time.time()
+    sec = curTime - prevTime
+    prevTime = curTime
+    fps = 1/(sec)
+    str = "FPS: %0.1f" % fps
+    print(str)
+    # cv2.putText(result, str, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+    cv2.imshow('result', result)
+
+    cmd = "$w0/" + str(angleError) + "%"
+    ser.write(cmd.encode())                 # 조향 오차 전송
+
 #         end         #
 
 cmd = "$w2/3%"
@@ -436,56 +470,19 @@ class AsyncTask:
         threading.Timer(1,self.TaskA).start()
 
 
-
-
     def TaskB(self):
-        prevTime = 0
+        # 영상처리 코드 #
         while (cap.isOpened()):
-        angleError = 0
-
-    # 영상처리 코드 #
             if __name__ == '__main__':
-                ret, frame = cap.read()
-#                if frame.shape[0] != 540:  # resizing for challenge video
-#                    frame = cv2.resize(frame, None, fx=3/4, fy=3/4, interpolation=cv2.INTER_AREA)
-                frame = cv2.resize(frame, dsize=(540,360), interpolation=cv2.INTER_AREA)
-
-                result, left_line, right_line = detect_lanes_img(frame)
-                f_x = result.shape[1]
-                f_y = result.shape[0]
-#                print(f_x,f_y)
-#                print(left_line, right_line)
-#                midpoint = int((left_line[2]+right_line[2])/2)
-#                print(midpoint)
-
-                midx = int(right_line[2] + left_line[2] - (right_line[0] + left_line[0]) / 2)
-                midy = int(right_line[3] * 2 - right_line[1])
-                result = cv2.circle(result,(midx,midy),5,(0,255,0),-1)
-                angleError = midx - 270
-#                result =  cv2.circle(result, (midpoint,int(f_y/2)), 5,(0,255,0),-1
-                curTime = time.time()
-                sec = curTime - prevTime
-                prevTime = curTime
-                fps = 1/(sec)
-                str = "FPS: %0.1f" % fps
-                print(str)
-#             cv2.putText(result, str, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
-                cv2.imshow('result', result)
-
-             # out.write(frame)
-
+                threadB = threading.Thread(target=videoProcessing)
+                threadB.start()
+                threadB.join()
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
-
-    #     end      #
-
-            cmd = "$w0/" + str(angleError) + "%"
-            ser.write(cmd.encode())                 # 조향 오차 전송
- 
         cap.release()
         cv2.destroyAllWindows()
-#         end         #
+        #         end         #
 
 def main():
         at = AsyncTask()
